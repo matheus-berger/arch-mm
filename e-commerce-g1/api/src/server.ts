@@ -132,6 +132,7 @@ app.put('/products/:id', async (req, res) => {
     
 });
 
+
 app.delete('/products/:id', async (req, res) => {
 
     const { id } = req.params;
@@ -143,7 +144,8 @@ app.delete('/products/:id', async (req, res) => {
                 id: id,
             }
         });
-        res.status(204).send();
+
+        return res.status(204).send();
 
     } catch (error) {
        
