@@ -1,0 +1,80 @@
+
+version: '3.8'
+
+services:
+  products-db:
+    image: postgres:15
+    container_name: products-db
+    restart: always
+    environment:
+      POSTGRES_USER: user_products
+      POSTGRES_PASSWORD: password_products
+      POSTGRES_DB: db_products
+    ports:
+      - "5433:5432"
+    volumes:
+      - products_db_data:/var/lib/postgresql/data
+
+  users-db:
+    image: postgres:15
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_USER: user_users
+      POSTGRES_PASSWORD: password_users
+      POSTGRES_DB: db_users
+    ports:
+      - "5434:5432"
+    volumes:
+      - users_db_data:/var/lib/postgresql/data
+
+  payments-db:
+    image: postgres:15
+    container_name: payments-db
+    restart: always
+    environment:
+      POSTGRES_USER: user_payments
+      POSTGRES_PASSWORD: password_payments
+      POSTGRES_DB: db_payments
+    ports:
+      - "5435:5432"
+    volumes:
+      - payments_db_data:/var/lib/postgresql/data
+
+  products-api:
+    # 1. 'build' em vez de 'image': constrói a partir de um Dockerfile
+    build:
+      context: ./services/products-service
+    container_name: products-api
+    restart: always
+    # 2. Mapeia a porta 3001 da sua máquina para a 3000 do container
+    ports:
+      - "3001:3000"
+    # 3. Mapeia nosso código local para o container, para vermos as mudanças em tempo real
+    volumes:
+      - ./services/products-service:/app
+      - /app/node_modules
+    # 4. Garante que o banco de dados inicie ANTES da API
+    depends_on:
+      - products-db
+    # 5. Passa a URL do banco para a API. Note que o host é 'products-db'!
+    environment:
+      DATABASE_URL: postgresql://user_products:password_products@products-db:5432/db_products
+
+  orders-db:
+    image: mongo:latest
+    container_name: orders-db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user_orders
+      MONGO_INITDB_ROOT_PASSWORD: password_orders
+    ports:
+      - "27017:27017"
+    volumes:
+      - orders_db_data:/data/db
+
+volumes:
+  products_db_data:
+  users_db_data:
+  payments_db_data:
+  orders_db_data:
