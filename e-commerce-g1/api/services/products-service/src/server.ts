@@ -58,11 +58,13 @@ app.get('/products/:id', async (req, res) => {
 // UPDATE - Atualizar um produto por ID
 app.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock } = req.body;
+  // Removido 'stock' daqui
+  const { name, price } = req.body; 
   try {
     const updatedProduct = await prisma.product.update({
       where: { id: id },
-      data: { name, price, stock },
+      // Removido 'stock' daqui
+      data: { name, price }, 
     });
     res.status(200).json(updatedProduct);
   } catch (error) {
@@ -95,6 +97,34 @@ app.delete('/products/:id', async (req, res) => {
   }
 });
 
+// PATCH - Endpoint específico para atualizar o estoque
+app.patch('/products/:id/stock', async (req, res) => {
+  const { id } = req.params;
+  const { amount } = req.body; // 'amount' pode ser positivo (adicionar) ou negativo (remover)
+
+  // Validação para garantir que 'amount' é um número
+  if (typeof amount !== 'number') {
+    return res.status(400).json({ message: "O valor 'amount' deve ser um número." });
+  }
+
+  try {
+    const updatedProduct = await prisma.product.update({
+      where: { id: id },
+      data: {
+        stock: {
+          // 'increment' pode ser usado para somar ou subtrair
+          increment: amount 
+        }
+      },
+    });
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return res.status(404).json({ message: `Produto de id ${id} não encontrado!` });
+    }
+    return res.status(500).json({ message: "Houve um erro ao atualizar o estoque." });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Products service running on port ${PORT}`);
