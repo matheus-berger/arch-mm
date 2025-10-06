@@ -103,6 +103,26 @@ services:
     volumes:
       - orders_db_data:/data/db
 
+  orders-api:
+    build:
+      context: ./services/orders-service
+    container_name: orders-api
+    restart: always
+    ports:
+      - "3004:3000" # Usando a porta 3004 para este serviço
+    volumes:
+      - ./services/orders-service:/app
+      - /app/node_modules
+    depends_on:
+      - orders-db
+      - products-api # Adicionando dependência dos outros serviços
+      - users-api    # que ele precisará contatar
+    environment:
+      MONGO_URL: mongodb://user_orders:password_orders@orders-db:27017
+      # URLs para os outros serviços
+      PRODUCTS_API_URL: http://products-api:3000
+      USERS_API_URL: http://users-api:3000
+
 volumes:
   products_db_data:
   users_db_data:

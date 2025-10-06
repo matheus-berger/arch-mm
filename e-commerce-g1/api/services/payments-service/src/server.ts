@@ -28,6 +28,23 @@ app.post('/payment-types', async (req, res) => {
   }
 });
 
+// CREATE OrderPayment
+app.post('/order-payments', async (req, res) => {
+  try {
+    const { orderId, total, typePaymentId } = req.body;
+    const newOrderPayment = await prisma.orderPayment.create({
+      data: {
+        orderId,
+        total,
+        typePaymentId
+      }
+    });
+    res.status(201).json(newOrderPayment);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao registrar o pagamento." });
+  }
+});
+
 // READ (All)
 app.get('/payment-types', async (req, res) => {
   try {
@@ -38,6 +55,22 @@ app.get('/payment-types', async (req, res) => {
   }
 });
 
+// READ (por orderId)
+app.get('/order-payments', async (req, res) => {
+  try {
+    const { orderId } = req.query;
+    if (!orderId) {
+      return res.status(400).json({ message: "O parâmetro 'orderId' é obrigatório." });
+    }
+    const payments = await prisma.orderPayment.findMany({
+      where: { orderId: orderId as string },
+      include: { paymentType: true },
+    });
+    res.status(200).json(payments);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao buscar pagamentos." });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Payments service running on port ${PORT}`);
