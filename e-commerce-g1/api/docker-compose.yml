@@ -28,6 +28,21 @@ services:
     volumes:
       - users_db_data:/var/lib/postgresql/data
 
+  users-api:
+    build:
+      context: ./services/users-service
+    container_name: users-api
+    restart: always
+    ports:
+      - "3002:3000" # Expondo na porta 3002 da sua máquina
+    volumes:
+      - ./services/users-service:/app
+      - /app/node_modules
+    depends_on:
+      - users-db
+    environment:
+      DATABASE_URL: postgresql://user_users:password_users@users-db:5432/db_users
+
   payments-db:
     image: postgres:15
     container_name: payments-db
