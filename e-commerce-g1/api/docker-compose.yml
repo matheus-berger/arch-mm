@@ -56,6 +56,21 @@ services:
     volumes:
       - payments_db_data:/var/lib/postgresql/data
 
+  payments-api:
+    build:
+      context: ./services/payments-service
+    container_name: payments-api
+    restart: always
+    ports:
+      - "3003:3000" # Expondo na porta 3003
+    volumes:
+      - ./services/payments-service:/app
+      - /app/node_modules
+    depends_on:
+      - payments-db
+    environment:
+      DATABASE_URL: postgresql://user_payments:password_payments@payments-db:5432/db_payments
+
   products-api:
     # 1. 'build' em vez de 'image': constrói a partir de um Dockerfile
     build:
