@@ -1,6 +1,7 @@
+import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import express from 'express';
-import { PrismaClient, Prisma } from '@prisma/client';
+
 
 const app = express();
 const prisma = new PrismaClient();
@@ -65,10 +66,13 @@ app.put('/products/:id', async (req, res) => {
     });
     res.status(200).json(updatedProduct);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    // Verificamos se o erro tem um código e se esse código é 'P2025'
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return res.status(404).json({ message: `Produto de id ${id} não encontrado!` });
     }
-    res.status(500).json({ message: "Erro ao atualizar o produto." });
+    
+    // Para todos os outros erros
+    return res.status(500).json({ message: "Houve um erro no servidor." });
   }
 });
 
@@ -81,10 +85,13 @@ app.delete('/products/:id', async (req, res) => {
     });
     res.status(204).send();
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    // Verificamos se o erro tem um código e se esse código é 'P2025'
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return res.status(404).json({ message: `Produto de id ${id} não encontrado!` });
     }
-    res.status(500).json({ message: "Houve um erro ao deletar o produto." });
+    
+    // Para todos os outros erros
+    return res.status(500).json({ message: "Houve um erro no servidor." });
   }
 });
 
